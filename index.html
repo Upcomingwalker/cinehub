@@ -3,43 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinehub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Cinema point</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container-fluid py-4 text-center header-container">
-        <h1 class="display-4 fw-bold mb-4">Cinehub</h1>
-        <p class="lead mb-4">Your Ultimate Destination for Global Cinema</p>
+    <div id="intro-overlay">
+        <div class="loader"></div>
+        <div id="intro-text">Mom's Magic</div>
+    </div>
+
+    <div class="container-fluid py-3 text-center">
+        <h1 class="display-4 mb-4">Cinema point</h1>
+        <p class="lead mb-4">Discover Amazing Movies from Around the World!</p>
         
         <div class="search-container">
             <input type="text" id="searchInput" class="search-input" placeholder="Search for movies...">
-            <button id="searchButton" class="btn btn-primary position-absolute end-0 top-50 translate-middle-y me-2">
-                Search
-            </button>
         </div>
 
-        <div class="categories-container mt-4">
-            <button class="category-pill" data-category="all">All Movies</button>
+        <div class="category-container">
+            <button class="category-pill active" data-category="all">All Movies</button>
             <button class="category-pill" data-category="hollywood">Hollywood</button>
             <button class="category-pill" data-category="bollywood">Bollywood</button>
             <button class="category-pill" data-category="tollywood">Tollywood</button>
         </div>
-    </div>
-
-    <main class="container-fluid py-4">
-        <div id="movies" class="movie-grid">
-            <!-- Movies will be dynamically inserted here -->
+        
+        <div id="movies" class="row g-4">
+            <!-- Movies will be populated here -->
         </div>
 
         <div id="metadataPage" class="d-none">
             <!-- Movie metadata will be displayed here -->
         </div>
-    </main>
+    </div>
 
     <footer class="text-center py-4 mt-5">
-        <p>© 2024 Cinema Magic - Your Global Movie Hub</p>
+        <p>© 2024 Cygnus Studios - Cinema Point</p>
     </footer>
 
     <script src="app.js"></script>
