@@ -1,128 +1,120 @@
 const API_KEY = "AIzaSyC9ax5uqkdmbPn-Ii3KrZ4pxXfhy4tiXRA";
 const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&key=${API_KEY}`;
 
-// Category-specific search terms
-const categorySearchTerms = {
-    all: "",
-    hollywood: "latest english movies full movie",
-    bollywood: "latest hindi movies full movie",
-    tollywood: "latest telugu movies hindi dubbed"
+const moviesContainer = document.getElementById("movies");
+const metadataPage = document.getElementById("metadataPage");
+const searchInput = document.getElementById("searchInput");
+
+// Category search terms
+const categoryQueries = {
+    all: "full movie english hindi dubbed 2024",
+    hollywood: "hollywood full movie english 2024",
+    bollywood: "bollywood full movie hindi 2024",
+    tollywood: "tollywood hindi dubbed full movie 2024"
 };
 
 let currentCategory = 'all';
-let lastSearchQuery = '';
 
-// Enhanced intro animation
-function createIntroOverlay() {
-    const introOverlay = document.createElement('div');
-    introOverlay.id = 'intro-overlay';
-    introOverlay.innerHTML = `
-        <div id="intro-text">Cinema Magic</div>
-    `;
-    document.body.insertBefore(introOverlay, document.body.firstChild);
-}
-
-// Enhanced movie fetching with category support
-async function fetchMovies(query = "", category = "all") {
+// Fetch movies based on category or search
+async function fetchMovies(query = null) {
     try {
-        const searchTerm = query || categorySearchTerms[category];
-        const response = await fetch(`${API_URL}&q=${encodeURIComponent(searchTerm)}`);
+        const searchQuery = query || categoryQueries[currentCategory];
+        const response = await fetch(`${API_URL}&q=${encodeURIComponent(searchQuery)}`);
         const data = await response.json();
 
         if (data.items) {
             displayMovies(data.items);
             showHomePage();
         } else {
+            console.error("No movies found:", data);
             showError("No movies found. Try different search terms.");
         }
     } catch (error) {
         console.error("Error fetching data:", error);
-        showError("Unable to fetch movies. Please try again later.");
+        showError("Failed to fetch movies. Please try again.");
     }
 }
 
-// Enhanced movie display with staggered animation
+// Display movies in a grid
 function displayMovies(movies) {
     moviesContainer.innerHTML = movies
         .map((movie, index) => `
-            <div class="movie-card" style="animation-delay: ${index * 0.1}s">
-                <div class="card">
-                    <div class="card-image-container">
-                        <img src="${movie.snippet.thumbnails.high.url}" class="card-img-top" alt="${movie.snippet.title}">
-                    </div>
+            <div class="col-md-3 mb-4" style="animation-delay: ${index * 0.1}s">
+                <div class="card h-100">
+                    <img src="${movie.snippet.thumbnails.high.url}" 
+                         class="card-img-top" 
+                         alt="${movie.snippet.title}">
                     <div class="card-body">
                         <h5 class="card-title">${movie.snippet.title}</h5>
                         <p class="card-text text-muted">${movie.snippet.channelTitle}</p>
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="showMetadataPage('${movie.id.videoId}')">
-                                Details
+                        <div class="mt-auto">
+                            <button class="btn btn-primary mb-2 w-100" 
+                                    onclick="showMetadataPage('${movie.id.videoId}')">
+                                View Details
                             </button>
                             <a href="https://www.youtube.com/watch?v=${movie.id.videoId}" 
-                               class="btn btn-success" target="_blank">
+                               class="btn btn-success w-100" 
+                               target="_blank">
                                 Watch Now
                             </a>
                         </div>
                     </div>
                 </div>
-            </div>`
-        )
+            </div>`)
         .join("");
 }
 
-// Enhanced metadata display
+// Show movie metadata
 async function showMetadataPage(videoId) {
-    const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`;
-
     try {
+        const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`;
         const response = await fetch(url);
         const data = await response.json();
 
         if (data.items?.[0]) {
             const meta = data.items[0];
-            const formattedViews = new Intl.NumberFormat().format(meta.statistics.viewCount);
-            const formattedLikes = new Intl.NumberFormat().format(meta.statistics.likeCount || 0);
-
             metadataPage.innerHTML = `
-                <div class="metadata-container">
-                    <div class="card bg-dark text-light p-4">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <img src="${meta.snippet.thumbnails.high.url}" 
-                                     class="img-fluid rounded mb-3" 
-                                     alt="${meta.snippet.title}">
+                <div class="card bg-dark text-light p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="${meta.snippet.thumbnails.high.url}" 
+                                 class="img-fluid rounded mb-3" 
+                                 alt="${meta.snippet.title}">
+                        </div>
+                        <div class="col-md-6">
+                            <h2 class="mb-4">${meta.snippet.title}</h2>
+                            <p><strong>Channel:</strong> ${meta.snippet.channelTitle}</p>
+                            <p><strong>Views:</strong> ${parseInt(meta.statistics.viewCount).toLocaleString()}</p>
+                            <p><strong>Likes:</strong> ${parseInt(meta.statistics.likeCount || 0).toLocaleString()}</p>
+                            <div class="mt-4">
+                                <h5>Description:</h5>
+                                <p>${meta.snippet.description}</p>
                             </div>
-                            <div class="col-md-6">
-                                <h2 class="mb-4">${meta.snippet.title}</h2>
-                                <div class="metadata-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Views</span>
-                                        <span class="stat-value">${formattedViews}</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Likes</span>
-                                        <span class="stat-value">${formattedLikes}</span>
-                                    </div>
-                                </div>
-                                <div class="metadata-description">
-                                    <h5>Description</h5>
-                                    <p>${meta.snippet.description}</p>
-                                </div>
-                                <button class="btn btn-primary mt-4" onclick="showHomePage()">
-                                    Back to Movies
-                                </button>
-                            </div>
+                            <button class="btn btn-primary mt-4" onclick="showHomePage()">
+                                Back to Movies
+                            </button>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
             showMetadataSection();
         } else {
             showError("Movie details not available.");
         }
     } catch (error) {
         console.error("Error fetching meta data:", error);
-        showError("Unable to load movie details.");
+        showError("Failed to load movie details.");
     }
+}
+
+// Toggle visibility
+function showMetadataSection() {
+    moviesContainer.classList.add("d-none");
+    metadataPage.classList.remove("d-none");
+}
+
+function showHomePage() {
+    metadataPage.classList.add("d-none");
+    moviesContainer.classList.remove("d-none");
 }
 
 // Error handling
@@ -136,34 +128,28 @@ function showError(message) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    createIntroOverlay();
-    
-    // Category navigation
+    // Category selection
     document.querySelectorAll('.category-pill').forEach(pill => {
         pill.addEventListener('click', (e) => {
             const category = e.target.dataset.category;
             currentCategory = category;
-            document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.category-pill').forEach(p => 
+                p.classList.remove('active'));
             e.target.classList.add('active');
-            fetchMovies("", category);
+            fetchMovies();
         });
     });
 
     // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    const searchButton = document.getElementById('searchButton');
-
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             const query = searchInput.value.trim();
             if (query) {
-                lastSearchQuery = query;
                 fetchMovies(query);
             }
         }
     });
 
-    searchButton.addEventListener('click', () => {
-        const query = searchInput.value.trim();
-        if (query) {
-            lastSearchQuery
+    // Initial load
+    fetchMovies();
+});
